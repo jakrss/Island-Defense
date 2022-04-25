@@ -3,7 +3,7 @@
 library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, GenericTitanTargets, IsUnitWard, ItemExtras, UnitStatus, BUM, ABMA {
     private struct FossuriousUlt {
         public static hashtable hCocMin = InitHashtable();
-
+    //test git
         private static constant integer ABILITY_ID = 'A0QU';
         private static constant integer FOSSURIOUS_ID = 'E012';
         private static constant integer FOSSURIOUS_MINION_ID = 'U01A';
