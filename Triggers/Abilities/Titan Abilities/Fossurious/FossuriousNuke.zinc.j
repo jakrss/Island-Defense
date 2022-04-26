@@ -15,14 +15,15 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
             real dx = (this.homingTargetX - this.x);
             real dy = (this.homingTargetY - this.y);
             real range = SquareRoot(dx * dx + dy * dy);
+            timer tInterval;
 
             if (range < 50.0){
                 this.object.destroy();
                 this.terminate();
             }
-            if (this.object.hitStructure)) {
-                this.object.destroy();
-                this.terminate();
+            if (this.object.hitStructure) {
+                    this.object.destroy();
+                    this.terminate();
             }
         }
     }
