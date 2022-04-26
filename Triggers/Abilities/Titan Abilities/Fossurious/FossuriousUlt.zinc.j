@@ -135,6 +135,7 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
                 //unhide minion
                 PauseUnit(uMinion, false);
                 ShowUnit(uMinion, true);
+                SetUnitOwner(uMinion, GetOwningPlayer(uCocoon), true); //change minion owner to whoever owned the cocoon in case ownership change occured during ult
                 uCocoon = FirstOfGroup(this.groupCocoon);
             }
             GroupClear(this.groupCocoon);
@@ -144,16 +145,13 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
             uCocoon = null;
         }
 
-        private method killCocoon(unit uCocoon) {
+        public static method onCocoonDeath(unit uCocoon) {
             unit uMinion;
-            if (GetUnitTypeId(uCocoon) == this.COCOON_ID) { //unit is a cocoon
-                uMinion = LoadUnitHandle(FossuriousUlt.hCocMin, GetHandleId(uCocoon), 0);
-                PauseUnit(uMinion, false);
-                ShowUnit(uMinion, true);
 
-                this.totalCocoon = this.totalCocoon - 1;
-                GroupRemoveUnit(this.groupCocoon, uCocoon);
-            }
+            uMinion = LoadUnitHandle(FossuriousUlt.hCocMin, GetHandleId(uCocoon), 0);
+            PauseUnit(uMinion, false);
+            ShowUnit(uMinion, true);
+            SetUnitOwner(uMinion, GetOwningPlayer(uCocoon), true); //change minion owner to whoever owned the cocoon in case ownership change occured during ult
         }
 		
 		public method tick() -> boolean {
@@ -201,23 +199,17 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
             this.caster = null;
 			this.totalCocoon = 0;
             DestroyGroup(this.groupCocoon);
+            FlushParentHashtable(FossuriousUlt.hCocMin);
         }
         
         private static method onCast(){
             unit caster = GetSpellAbilityUnit();
             thistype.begin(caster);
         }
-
-        private static method onCocoonDeath() -> thistype {
-            thistype this = thistype.allocate();
-            unit died = GetTriggerUnit();
-            this.killCocoon(died);
-            died = null;
-            return this;
-        }
         
         public static method onAbilitySetup(){
             trigger t = CreateTrigger();
+            unit died = null;
             GT_RegisterStartsEffectEvent(t, thistype.ABILITY_ID);
             TriggerAddCondition(t, Condition(function() -> boolean {
                 thistype.onCast();
@@ -229,7 +221,11 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
             t = CreateTrigger();
             GT_RegisterUnitDiesEvent(t, thistype.COCOON_ID);
             TriggerAddCondition( t, Condition(function() -> boolean {
-                thistype.onCocoonDeath();
+                died = GetTriggerUnit();
+                FossuriousUlt.onCocoonDeath(died);
+
+                thistype.totalCocoon = thistype.totalCocoon - 1;
+                GroupRemoveUnit(thistype.groupCocoon, uCocoon);
                 return false;
             }));
             t = null;
