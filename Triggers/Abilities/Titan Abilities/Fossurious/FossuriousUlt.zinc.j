@@ -63,12 +63,14 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
             group g = CreateGroup();
             unit u = null;
             integer cocoon = 0;
+            filterfunc uFilter = Filter(function() -> boolean {
+                return IsUnitType(GetFilterUnit(), UNIT_TYPE_STRUCTURE) == false && UnitAlive(GetFilterUnit());
+            });
             
-            GroupEnumUnitsInRange(g, GetUnitX(this.caster), GetUnitY(this.caster), this.healArea, null);
+            GroupEnumUnitsInRange(g, GetUnitX(this.caster), GetUnitY(this.caster), this.healArea, uFilter);
             
             u = FirstOfGroup(g);
             while (u != null){
-                //TODO
                 if (GetUnitTypeId(u) == this.COCOON_ID) { //unit is a cocoon
                     cocoon = cocoon + 1;
                 }
