@@ -7,6 +7,7 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
         private static constant integer ABILITY_ID = 'A0QU';
         private static constant integer FOSSURIOUS_ID = 'E012';
         private static constant integer FOSSURIOUS_MINION_ID = 'U01A';
+        private static constant integer CRYPT_SWARMER_ID = 'U01A';
         private static constant integer COCOON_ID = 'E015';
 		private static constant real TICK_DURATION = 0.5; //how often to check for cocoons in range
         private static constant integer DAMAGE_INCREASE = 15;
@@ -27,8 +28,8 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
         private method setup(){
 			this.duration = 30.0;
 			this.ticks = this.duration / TICK_DURATION;
-            this.effectArea = 500.0;
-            this.healArea = 650.0;
+            this.effectArea = 500.0;  //area around Foss to create cocoons
+            this.healArea = 650.0; //range Foss needs to be in of cocoons for heal AoE
 
             this.groupCocoon = CreateGroup();
         }
@@ -91,12 +92,15 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
             group g = CreateGroup();
             unit uMinion = null;
             unit uCocoon = null;
+            filterfunc uFilter = Filter(function() -> boolean {
+                return IsUnitType(GetFilterUnit(), UNIT_TYPE_STRUCTURE) == false && UnitAlive(GetFilterUnit());
+            });
 
-            GroupEnumUnitsInRange(g, GetUnitX(this.caster), GetUnitY(this.caster), this.effectArea, null);
+            GroupEnumUnitsInRange(g, GetUnitX(this.caster), GetUnitY(this.caster), this.effectArea, uFilter);
             this.totalCocoon = 0;
             uMinion = FirstOfGroup(g);
             while (uMinion != null){
-                if (GetUnitTypeId(uMinion) == this.FOSSURIOUS_MINION_ID) { //unit is a minion
+                if ((GetUnitTypeId(uMinion) == this.FOSSURIOUS_MINION_ID) || (GetUnitTypeId(uMinion) == this.CRYPT_SWARMER_ID)) { //unit is a minion / crypt swarmer
                     //hide minion
                     PauseUnit(uMinion, true);
                     ShowUnit(uMinion, false);
@@ -130,7 +134,7 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
                 uMinion = LoadUnitHandle(FossuriousUlt.hCocMin, GetHandleId(uCocoon), 0);
                 //remove unit from cocoon group
                 GroupRemoveUnit(this.groupCocoon, uCocoon);
-                RemoveUnit(uCocoon);
+                RemoveUnit(uCocoon); //do we want to kill here for death animation?
 
                 //unhide minion
                 PauseUnit(uMinion, false);
@@ -209,7 +213,7 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
         
         public static method onAbilitySetup(){
             trigger t = CreateTrigger();
-            unit died = null;
+            unit uCocoon = null;
             GT_RegisterStartsEffectEvent(t, thistype.ABILITY_ID);
             TriggerAddCondition(t, Condition(function() -> boolean {
                 thistype.onCast();
@@ -221,8 +225,8 @@ library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, Ge
             t = CreateTrigger();
             GT_RegisterUnitDiesEvent(t, thistype.COCOON_ID);
             TriggerAddCondition( t, Condition(function() -> boolean {
-                died = GetTriggerUnit();
-                FossuriousUlt.onCocoonDeath(died);
+                uCocoon = GetTriggerUnit();
+                FossuriousUlt.onCocoonDeath(uCocoon);
 
                 thistype.totalCocoon = thistype.totalCocoon - 1;
                 GroupRemoveUnit(thistype.groupCocoon, uCocoon);
