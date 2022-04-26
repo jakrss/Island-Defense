@@ -1,6 +1,6 @@
 //! zinc
 
-library FossuriousUlt requires GameTimer, GT, xebasic, xepreload, xecollider, GenericTitanTargets, IsUnitWard, ItemExtras, UnitStatus, BUM, ABMA {
+library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, IsUnitWard, ItemExtras, UnitStatus, BUM, ABMA {
     private struct FossuriousUlt {
         public static hashtable hCocMin = InitHashtable();
         
