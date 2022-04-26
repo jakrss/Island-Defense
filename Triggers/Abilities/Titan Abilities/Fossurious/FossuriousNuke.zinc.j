@@ -20,6 +20,10 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
                 this.object.destroy();
                 this.terminate();
             }
+            if (this.object.hitStructure)) {
+                this.object.destroy();
+                this.terminate();
+            }
         }
     }
 
@@ -67,7 +71,7 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
         private real damageAmount = 0.0;
         private real damageArea = 0.0;
         private real stunDuration = 0.0;
-        private boolean hitStructure = false;
+        public boolean hitStructure = false;
         private hashtable hNuke = InitHashtable();
         private xedamage damage = 0;
         private FossuriousNukeWave wave = 0;
