@@ -2,13 +2,15 @@
 
 library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, IsUnitWard, ItemExtras, UnitStatus, BUM, ABMA {
     private struct FossuriousUlt {
-        public static hashtable hCocMin = InitHashtable();
+        public static hashtable hCocMin = null;
+        public static integer totalCocoon = 0;
+        public static group groupCocoon = null;
         
         private static constant integer ABILITY_ID = 'A0QU';
         private static constant integer FOSSURIOUS_ID = 'E012';
         private static constant integer FOSSURIOUS_MINION_ID = 'U01A';
-        private static constant integer CRYPT_SWARMER_ID = 'U01A';
-        private static constant integer COCOON_ID = 'E015';
+        private static constant integer CRYPT_SWARMER_ID = 'u019';
+        private static constant integer COCOON_ID = 'U01B';
 		private static constant real TICK_DURATION = 0.5; //how often to check for cocoons in range
         private static constant integer DAMAGE_INCREASE = 15;
 
@@ -31,7 +33,8 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
             this.effectArea = 500.0;  //area around Foss to create cocoons
             this.healArea = 650.0; //range Foss needs to be in of cocoons for heal AoE
 
-            this.groupCocoon = CreateGroup();
+            FossuriousUlt.groupCocoon = CreateGroup();
+            FossuriousUlt.hCocMin = InitHashtable();
         }
 		
 		// Configurable
@@ -43,9 +46,6 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
         
 		// Required
         private unit caster = null;
-        private integer totalCocoon = 0;
-        private group groupCocoon = null;
-        private group groupMinion = null;
 		private GameTimer tickTimer = 0;
 		private real ticks = 0.0;
 
@@ -80,12 +80,16 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
             GroupClear(g);
             DestroyGroup(g);
 
-            this.damageMultiplier = this.totalCocoon - cocoon; //for every cocoon out of range, increase damage
-            this.healAmount = ((getMaxHealth(this.caster) * 0.02 * cocoon) / this.ticks); //Get amount to heal for this tick
+            this.damageMultiplier = FossuriousUlt.totalCocoon - cocoon; //for every cocoon out of range, increase damage
+            this.healAmount = ((getMaxHealth(this.caster) * 0.02 * cocoon)); //Get amount to heal for this tick
             if (this.checkTarget(this.caster)){
                 healUnit(this.caster, this.healAmount);
+                BJDebugMsg("Ticks Amount " + R2S(this.ticks));
+                BJDebugMsg("Cocoons found " + I2S(cocoon));
+                BJDebugMsg("Heal Amount " + R2S(this.healAmount));
             }
 
+            cocoon = 0;
             g = null;
             u = null;
         }
@@ -99,7 +103,7 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
             });
 
             GroupEnumUnitsInRange(g, GetUnitX(this.caster), GetUnitY(this.caster), this.effectArea, uFilter);
-            this.totalCocoon = 0;
+            FossuriousUlt.totalCocoon = 0;
             uMinion = FirstOfGroup(g);
             while (uMinion != null){
                 if ((GetUnitTypeId(uMinion) == this.FOSSURIOUS_MINION_ID) || (GetUnitTypeId(uMinion) == this.CRYPT_SWARMER_ID)) { //unit is a minion / crypt swarmer
@@ -108,10 +112,11 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
                     ShowUnit(uMinion, false);
                     //Create cocoon at minion location
                     uCocoon=CreateUnit(GetOwningPlayer(uMinion), this.COCOON_ID, GetUnitX(uMinion), GetUnitY(uMinion), 0);
+                    SetHeroLevel(uCocoon, GetHeroLevel(uMinion), false);
                     SaveUnitHandle(FossuriousUlt.hCocMin, GetHandleId(uCocoon), 0, uMinion);
                     //Add unit to cocoon group, increment counter
-                    GroupAddUnit(this.groupCocoon, uCocoon);
-                    this.totalCocoon = this.totalCocoon + 1;
+                    GroupAddUnit(FossuriousUlt.groupCocoon, uCocoon);
+                    FossuriousUlt.totalCocoon = FossuriousUlt.totalCocoon + 1;
                 }
                 GroupRemoveUnit(g, uMinion);
                 uMinion = FirstOfGroup(g);
@@ -131,22 +136,22 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
 
 
             //LOOP through remaining cocoon units and delete them
-            uCocoon = FirstOfGroup(this.groupCocoon);
+            uCocoon = FirstOfGroup(FossuriousUlt.groupCocoon);
             while (uCocoon != null){
                 uMinion = LoadUnitHandle(FossuriousUlt.hCocMin, GetHandleId(uCocoon), 0);
                 //remove unit from cocoon group
-                GroupRemoveUnit(this.groupCocoon, uCocoon);
+                GroupRemoveUnit(FossuriousUlt.groupCocoon, uCocoon);
                 RemoveUnit(uCocoon); //do we want to kill here for death animation?
 
                 //unhide minion
                 PauseUnit(uMinion, false);
                 ShowUnit(uMinion, true);
                 SetUnitOwner(uMinion, GetOwningPlayer(uCocoon), true); //change minion owner to whoever owned the cocoon in case ownership change occured during ult
-                uCocoon = FirstOfGroup(this.groupCocoon);
+                uCocoon = FirstOfGroup(FossuriousUlt.groupCocoon);
             }
-            GroupClear(this.groupCocoon);
+            GroupClear(FossuriousUlt.groupCocoon);
 
-            this.totalCocoon = 0;
+            FossuriousUlt.totalCocoon = 0;
             uMinion = null;
             uCocoon = null;
         }
@@ -162,7 +167,7 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
 		
 		public method tick() -> boolean {
 			// We need to quit prematurely (all cocoons were killed)
-			if (this.totalCocoon == 0) return false;
+			if (FossuriousUlt.totalCocoon == 0) return false;
 			
 			this.healAoE();
             if (this.damageMultiplier > 0) this.increaseDamage(); //increase damage if any cocoons out of range
@@ -203,8 +208,8 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
 			this.tickTimer.deleteLater();
 			this.tickTimer = 0;
             this.caster = null;
-			this.totalCocoon = 0;
-            DestroyGroup(this.groupCocoon);
+			FossuriousUlt.totalCocoon = 0;
+            DestroyGroup(FossuriousUlt.groupCocoon);
             FlushParentHashtable(FossuriousUlt.hCocMin);
         }
         
@@ -215,7 +220,6 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
         
         public static method onAbilitySetup(){
             trigger t = CreateTrigger();
-            unit uCocoon = null;
             GT_RegisterStartsEffectEvent(t, thistype.ABILITY_ID);
             TriggerAddCondition(t, Condition(function() -> boolean {
                 thistype.onCast();
@@ -227,11 +231,11 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
             t = CreateTrigger();
             GT_RegisterUnitDiesEvent(t, thistype.COCOON_ID);
             TriggerAddCondition( t, Condition(function() -> boolean {
-                uCocoon = GetTriggerUnit();
+                unit uCocoon = GetTriggerUnit();
                 FossuriousUlt.onCocoonDeath(uCocoon);
 
-                thistype.totalCocoon = thistype.totalCocoon - 1;
-                GroupRemoveUnit(thistype.groupCocoon, uCocoon);
+                FossuriousUlt.totalCocoon = FossuriousUlt.totalCocoon - 1;
+                GroupRemoveUnit(FossuriousUlt.groupCocoon, uCocoon);
                 return false;
             }));
             t = null;

@@ -25,8 +25,8 @@ library FossuriousScout requires xecast, ABMA {
             u=CreateUnit(GetOwningPlayer(uFossurious), uCryptSwarmers, XLoc, YLoc, bj_DEGTORAD * (angle * count));
             UnitApplyTimedLife(u, 'BTLF', numSwarm * 15);
             UnitAddAbility(u, 'A0MF');
-            newX = XLoc + 2000 * Cos(bj_DEGTORAD * (angle * count));
-            newY = YLoc + 2000 * Sin(bj_DEGTORAD * (angle * count));
+            newX = XLoc + 450 * Cos(bj_DEGTORAD * (angle * count));
+            newY = YLoc + 450 * Sin(bj_DEGTORAD * (angle * count));
             IssuePointOrder(u, "move", newX, newY);
             GroupAddUnit(swarmGroup, u);
         }
