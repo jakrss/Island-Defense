@@ -1,6 +1,6 @@
 //! zinc
-library GlaciousUltimateNew requires GT, GameTimer, xepreload, BUM, ABMA {
-	private constant integer aIceShield = 'o03W';
+library GlaciousUltimate requires GT, xepreload, BUM, ABMA {
+	private constant integer aIceShield = 'A0Q1'; //TGAF
     private constant real TICK_DURATION = 0.5; //how often to tick
     private constant real MANA_DRAIN = 10.0; //MP to drain per second active
     private constant real MANA_DRAIN_PER_DAMAGE = 3.0; //MP to drain per 1 damage absorbed
@@ -9,29 +9,36 @@ library GlaciousUltimateNew requires GT, GameTimer, xepreload, BUM, ABMA {
 
 
     private boolean activeIceShield;
-    private GameTimer tickTimer;
+    private timer tickTimer;
     private real mpDrainTick = MANA_DRAIN * TICK_DURATION; //how much mana to drain per tick
     private unit uGlacious;
+
+    private function onEnd() {
+        //TODO: reset everything back to normal
+        DestroyTimer(tickTimer);
+        activeIceShield = false;
+        uGlacious = null;
+    }
+
+    private function tickTimerTick() {
+        real curMP = getMana(uGlacious);
+        addMana(uGlacious, -mpDrainTick); //add negative mana to reduce by tick amount
+
+        if (curMP < 50) { //check mana, if less than 50
+            activeIceShield = false;
+            ABMAStartAbilityCooldown(uGlacious, aIceShield, ABILITY_COOLDOWN); //Glac ran out of mana, put ult on CD
+            onEnd();
+        }
+    }
 	
 	private function onCast(unit caster) {
         activeIceShield = true;
         uGlacious = caster;
         ABMASetUnitAbilityCooldown(uGlacious, aIceShield, 0); //set ability cooldown to none (if OOM from last cast it will have a CD)
-        tickTimer = GameTimer.newPeriodic(function(GameTimer t){
-            if (activeIceShield) tick(); //only tick if active
 
-            if (!activeIceShield) { //ice sheild is no longer active, destroy ticktimer
-                tickTimer.destroy();
-            }
-        });
-        tickTimer.start(TICK_DURATION);
+        tickTimer = CreateTimer();
+        TimerStart(tickTimer, TICK_DURATION, true, function tickTimerTick);
 	}
-
-    private function onEnd() {
-        //TODO: reset everything back to normal
-        activeIceShield = false;
-        uGlacious = null;
-    }
 
     private function onAttack(unit uAttacker) {
         addMana(uAttacker, MANA_PER_ATTACK); //give glac mana by MANA_PER_ATTACK
@@ -47,17 +54,6 @@ library GlaciousUltimateNew requires GT, GameTimer, xepreload, BUM, ABMA {
 
         healUnit(uTarget, damageReduce); //heal glacious for the exact amount of damage to reduce
         addMana(uTarget, -drainMP); //add "negative" mana to reduce mana by drainMP
-    }
-
-    private function tick() {
-        addMana(uGlacious, -mpDrainTick); //add negative mana to reduce by tick amount
-
-        if (mana < 50) { //check mana, if less than 50
-            activeIceShield = false;
-            onEnd();
-            ABMAStartAbilityCooldown(uGlacious, aIceShield, ABILITY_COOLDOWN); //Glac ran out of mana, put ult on CD
-            tickTimer.destroy();
-        }
     }
 
 	private function onInit() {
