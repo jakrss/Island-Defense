@@ -1,7 +1,7 @@
 # Island-Defense
  Island Defense for Warcraft 3 Repository<br/><br/>
 
-
+[Zinc Documentation](https://htmlpreview.github.io/?https://raw.githubusercontent.com/jakrss/Island-Defense/master/zinc.html)
 
 
 ## Object Editor
