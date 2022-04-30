@@ -20,6 +20,10 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
                 this.object.destroy();
                 this.terminate();
             }
+            if (range > this.object.distance){ //if nuke has travelled further than defined distance, destroy. There was some weird circumstances where the nuke would never never reach the target and would leak the object
+                this.object.destroy();
+                this.terminate();
+            }
         }
     }
 
