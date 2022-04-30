@@ -56,7 +56,7 @@ library Transmute requires CreateItemEx {
         /*== CROWN OF THIEVES*/
         if (i=='e00Y') {return('I037');}
         /*== REPLICATOR*/
-        if (i=='o01V') {return('I038');}
+        if (i=='o01V') {return('I04T');}
         /*== BARRICADE*/
         if (i=='h036') {return('I034');}
         /*== BOX OF GAIA*/
@@ -85,11 +85,13 @@ library Transmute requires CreateItemEx {
         if (i=='o017') {return('I01M');}
 	/* SUPER KEG OF DESTRUCTION*/
         if (i=='o03N') {return('I08C');}
+	/* TRIBAL TOTEM*/
+        if (i=='o040') {return('I04P');}
 		/* Ultimate Structure */
 		if (i=='o00Z') {return('I04E');}
         return 0;
     }
-
+    
     function onInit(){
         trigger t = CreateTrigger();
         TriggerRegisterAnyUnitEventBJ( t, EVENT_PLAYER_UNIT_SPELL_FINISH );

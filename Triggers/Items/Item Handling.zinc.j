@@ -51,8 +51,10 @@ scope ItemHandling initializer init
     
     private function IsUnitAllowedItem takes unit u, item it returns boolean
         local integer i = GetItemTypeId(it)
+		local item newItem = null
         local itemtype t = GetItemType(it)
         local player p = GetOwningPlayer(u)
+		local integer c = GetItemCharges(it)
         if (GetUnitTypeId(u) == XE_DUMMY_UNITID) then
             return true
         endif
@@ -62,13 +64,21 @@ scope ItemHandling initializer init
                 set i = ChangeItemToTitan(it)
                 if i != 0 then
                     call RemoveItem(it)
-                    call UnitAddItem(u, CreateItem(i, 0, 0))
+					set newItem = CreateItem(i, 0, 0)
+                    call UnitAddItem(u, newItem)
+					if c > 1 then
+						call SetItemCharges(newItem, c)
+					endif
                 endif
             else
                 set i = ChangeItemToBuilder(it)
                 if i != 0 then
                     call RemoveItem(it)
-                    call UnitAddItem(u, CreateItem(i, 0, 0))
+					set newItem = CreateItem(i, 0, 0)
+                    call UnitAddItem(u, newItem)
+					if c > 1 then
+						call SetItemCharges(newItem, c)
+					endif
                 endif
             endif
         elseif (t == ITEM_TYPE_CAMPAIGN or t == ITEM_TYPE_PERMANENT) and GetUnitPointValue(u) > 199 then

@@ -81,7 +81,7 @@ library BUM {
 		real curHP = GetUnitState(u, UNIT_STATE_LIFE);
 		UnitDamageTarget(u, u, -hp, false, false, null, null, null);
 		//We also want to heal invulnerable units:
-		if(GetUnitState(u, UNIT_STATE_LIFE) < curHP + hp) {
+		if(BlzIsUnitInvulnerable(u)) {
 			addHealth(u, hp);	//But sadly this won't be increased by heal modifiers.
 		}
 		u = null;

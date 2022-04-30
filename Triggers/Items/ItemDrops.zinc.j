@@ -25,13 +25,26 @@ library ItemDrops requires UnitManager, GameSettings {
         public static method dropRandomItemChance(real x, real y) {
             integer i = GetRandomInt(0,20);
 			unit u = GetKillingUnit();
+			unit d = GetTriggerUnit();
+			texttag msg;
+			integer cGold;
             if (i == 15){
                 // 1/20 chance for a drop
                 thistype.dropRandomItem(x, y);
             }
             if (GameSettings["TWEAK_GC"] == "on" && i <= 5){
                 // 5/20 chance for a GC
-                UnitAddItemByIdSwapped('I064', u);
+				msg = CreateTextTag();
+				SetTextTagText(msg, "|cffffcc00+ 10", TextTagSize2Height(8));
+				SetTextTagPos(msg, GetUnitX(d), GetUnitY(d), 100);
+				SetTextTagVisibility(msg, true);
+				SetTextTagPermanent(msg, false);
+				SetTextTagLifespan(msg, 1.8);
+				SetTextTagFadepoint(msg, 1.4);
+				SetTextTagVelocity(msg, TextTagSpeed2Velocity(0), TextTagSpeed2Velocity(44));
+				cGold = GetPlayerState(GetOwningPlayer(u), PLAYER_STATE_RESOURCE_GOLD);
+				SetPlayerState(GetOwningPlayer(u), PLAYER_STATE_RESOURCE_GOLD, cGold + 10);
+				DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Other\\Transmute\\PileofGold.mdl", d, "origin"));
             }
 			u = null;
         }

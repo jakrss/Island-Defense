@@ -10,18 +10,18 @@ library RebuildItemSystem {
         if (id == 'I04L'){return 'I04M';}  // Tavern
         if (id == 'I04J') {return 'I04K';} // Fireworks
         if (id == 'I01K') {return 'I04U';} // Mutation
-        if (id == 'I038') {return 'I04T';} // Replicator
         if (id == 'I05T') {return 'I05U';} // Egg Sack
         if (id == 'I014') {return 'I03K';} // Spell Well
-	if (id == 'I08D') {return 'I08C';} // Super Keg
+		if (id == 'I08D') {return 'I08C';} // Super Keg
+		if (id == 'I00O') {return 'I05B';} // Magic Pearl
     //============= REBUILD -> ITEM ============
         if (id == 'I04M') {return 'I04L';} // Tavern  
         if (id == 'I04K') {return 'I04J';} // Fireworks  
         if (id == 'I04U') {return 'I01K';} // Mutation 
-        if (id == 'I04T') {return 'I038';} // Replicator 
         if (id == 'I05U') {return 'I05T';} // Egg Sack
         if (id == 'I03K') {return 'I014';} // Spell Well
-	if (id == 'I08C') {return 'I08D';} // Super Keg
+		if (id == 'I08C') {return 'I08D';} // Super Keg
+		if (id == 'I05B') {return 'I00O';} // Magic Pearl
         return 0;
     }
     
@@ -33,7 +33,6 @@ library RebuildItemSystem {
         integer slotid = GetIssuedOrderId()-852002;
         unit u = GetOrderedUnit();
         integer id = GetTransmutedItemId(it);
-        
         it2 = UnitItemInSlot(u, slotid);
         if (it == it2 && id != 0){
             RemoveItem(it);
