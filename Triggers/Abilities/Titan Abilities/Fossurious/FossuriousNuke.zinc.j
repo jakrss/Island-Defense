@@ -67,11 +67,11 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
         private unit caster = null;
         private player castingPlayer = null;
         private integer level = 0;
-        private real distance = 0.0;
+        public real distance = 0.0;
         private real damageAmount = 0.0;
         private real damageArea = 0.0;
         private real stunDuration = 0.0;
-        public boolean hitStructure = false;
+        private boolean hitStructure = false;
         private hashtable hNuke = InitHashtable();
         private xedamage damage = 0;
         private FossuriousNukeWave wave = 0;

@@ -21,11 +21,8 @@ library BugReporterPerk requires PerksSystem {
         
         public method forPlayer(PlayerData p) -> boolean {
             string name = StringCase(p.name(), false);
-             if(name == "day#12140" ||
-		name == "wuhanda4ever#1239" ||
-		name == "cyan#11761" ||
-		name == "tchou#21413" ||
-		name == "sickbro516#2383") return true;
+             if(name == "" ||
+		        name == "") return true;
             return false;
         }
         
