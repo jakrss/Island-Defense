@@ -81,11 +81,9 @@ library FossuriousUlt requires GameTimer, GT, xepreload, GenericTitanTargets, Is
             DestroyGroup(g);
 
             this.damageMultiplier = FossuriousUlt.totalCocoon - cocoon; //for every cocoon out of range, increase damage
-            this.healAmount = ((getMaxHealth(this.caster) * 0.02 * cocoon)); //Get amount to heal for this tick
+            this.healAmount = ((getMissingHealth(this.caster) * 0.02 * cocoon)); //Get amount to heal for this tick
             if (this.checkTarget(this.caster)){
                 healUnit(this.caster, this.healAmount);
-                BJDebugMsg("Ticks Amount " + R2S(this.ticks));
-                BJDebugMsg("Cocoons found " + I2S(cocoon));
                 BJDebugMsg("Heal Amount " + R2S(this.healAmount));
             }
 

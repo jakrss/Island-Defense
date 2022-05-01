@@ -17,6 +17,10 @@ library BUM {
         return I2R(BlzGetUnitMaxHP(u));
     }
     
+    public function getMissingHealth(unit u) -> real {
+        return I2R(BlzGetUnitMaxHP(u) - R2I(GetUnitState(u, UNIT_STATE_LIFE)));
+    }
+
     public function getMana(unit u) -> real {
         return GetUnitState(u, UNIT_STATE_MANA);
     }
