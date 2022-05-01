@@ -4,6 +4,7 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA {
         private static constant integer aUnique = 'A0Q0';
         private static constant integer uCryptTunnel = 'e01E';
         private static constant real rEffectDistance = 74; //distance between each effect
+        private static constant real tunnelRange = 125.0;
 
         public static hashtable hTunneling = null; //hash table - do i want this?
         private static unit uFossurious = null; //fossurious unit
@@ -11,10 +12,6 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA {
         private static location lTarget = null; //location of target
         private static location lEffect = null; //location of effect animation
         private static integer alevel = 0; //level of ability
-
-
-        //configurable
-        private real tunnelRange = 125.0;
 
         //required
         private GameTimer tickTimer = 0;
@@ -102,6 +99,8 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA {
             GroupEnumUnitsInRange(g, GetLocationX(loc), GetLocationY(loc), range, function uFilterTunnel);
             ForGroup(g, function() { count = count + 1; });
 
+            DestroyGroup(g);
+            g = null;
             return count;
         }
 
