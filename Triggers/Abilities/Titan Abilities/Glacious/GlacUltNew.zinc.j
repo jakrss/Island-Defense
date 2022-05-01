@@ -4,12 +4,10 @@ library GlaciousUltimate requires xepreload, BUM, ABMA {
     private constant integer uGlaciousID = 'E00J';
     private constant real TICK_DURATION = 0.5; //how often to tick
     private constant real MANA_DRAIN = 10.0; //MP to drain per second active
-    private constant real MANA_DRAIN_PER_DAMAGE = 3.0; //MP to drain per 1 damage absorbed
+    private constant real MANA_DRAIN_PER_DAMAGE = 2; //MP to drain per 1 damage absorbed
     private constant real MANA_PER_ATTACK = 250.0; //MP to give per attack
     private constant real ABILITY_COOLDOWN = 5.0; //Cooldown when glac goes OOM
     private constant real ABILITY_COOLDOWN_OOM = 120.0; //Cooldown when glac goes OOM
-
-
 
     private boolean activeIceShield = false;
     private timer tickTimer;
@@ -17,7 +15,6 @@ library GlaciousUltimate requires xepreload, BUM, ABMA {
     private unit uGlacious;
 
     private function onDestroy() {
-        //TODO: reset everything back to normal
         DestroyTimer(tickTimer);
         activeIceShield = false;
         uGlacious = null;
@@ -31,7 +28,7 @@ library GlaciousUltimate requires xepreload, BUM, ABMA {
     private function tickTimerTick() {
         real curMP = getMana(uGlacious);
         addMana(uGlacious, -mpDrainTick); //add negative mana to reduce by tick amount
-        if (curMP < 50) { //check mana, if less than 50
+        if (curMP < 200) { //check mana, if less than 50
             activeIceShield = false;
             UnitRemoveAbility(uGlacious, aIceShield);
             UnitAddAbility(uGlacious, aIceShield);
@@ -76,7 +73,7 @@ library GlaciousUltimate requires xepreload, BUM, ABMA {
             integer i = GetIssuedOrderId();
             unit caster = GetOrderedUnit();
 
-            if (GetUnitTypeId(caster) == uGlaciousID) {
+            if (GetUnitTypeId(caster) == uGlaciousID) { //caster is Glacious
                 if (i == OrderId("manashieldon")){
                     onCast(caster);
                 }
@@ -98,7 +95,7 @@ library GlaciousUltimate requires xepreload, BUM, ABMA {
             unit target = GetTriggerUnit();
             real damage = GetEventDamage();
 			            
-            if (attacker != target) {
+            if (attacker != target) { //stop infinite loop as healing yourself is counted as a damage event
                 if (activeIceShield) { //no point processing anything unless ult is active
                     if(GetUnitAbilityLevel(attacker, aIceShield) > 0) { //attacker is titan & has learnt ult
                         if( IsUnitEnemy(target, GetOwningPlayer(attacker)) && BlzGetEventDamageType() == DAMAGE_TYPE_NORMAL) onAttack(attacker);
