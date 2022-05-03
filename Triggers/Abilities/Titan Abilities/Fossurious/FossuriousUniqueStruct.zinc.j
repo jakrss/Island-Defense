@@ -7,12 +7,11 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
         private static constant integer aUniqueDummy = 'A0QW';
         private static constant integer aBurrowDummy = 'A0QX';
         public static constant integer uCryptTunnel = 'e01E';
-        private static constant real rEffectDistance = 74; //distance between each effect
-        private static constant real tunnelRange = 125.0;
+        private static constant real rEffectDistance = 74; //distance factor between each effect
+        private static constant real tunnelRange = 250.0; //distance to tunnel for instant cast
 
         public static integer iCryptTunnelCount = 0;
 
-        public static hashtable hTunneling = null; //hash table - do i want this?
         private static unit uFossurious = null; //fossurious unit
         private static location lChannel = null; //location of fossurious at time of channel
         private static location lTarget = null; //location of target
@@ -66,19 +65,26 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
                     //cast burrow
                     UnitAddAbility(this.uFossurious, this.aBurrowDummy); //give foss a dummy ability to burrow animate
                     BlzUnitHideAbility(this.uFossurious, this.aBurrowDummy, true); //hide dummy ability
-                    IssueImmediateOrder(this.uFossurious, "burrow");
+                    IssueImmediateOrderById(this.uFossurious, 852533);
+					SetUnitTimeScalePercent(this.uFossurious, 84);
                 }
-                if (this.rEffectNumber == 3) ShowUnit(this.uFossurious, false); //hide unit
+                if (this.rEffectNumber == 3) {
+                    SetUnitTimeScalePercent(this.uFossurious, 0)
+                    //ShowUnit(this.uFossurious, false); //hide unit
+                }
                 if (this.rEffectNumber == 2) {
                     SetUnitPosition(this.uFossurious, GetLocationX(this.lTarget), GetLocationY(this.lTarget));
-                    ShowUnit(this.uFossurious, true);
+                    //ShowUnit(this.uFossurious, true); //unhide unit
                     SelectUnitForPlayerSingle(this.uFossurious, GetOwningPlayer(this.uFossurious));
-                    IssueImmediateOrder(this.uFossurious, "burrow"); //unburrow cast
+                    IssueImmediateOrderById(this.uFossurious, 852533); //unburrow cast
+                    SetUnitTimeScalePercent(this.uFossurious, 15);
                 }
 
                 CreateTunnelEffect(this.lTarget);
                 this.rEffectNumber = this.rEffectNumber - 1;
                 if (this.rEffectNumber <= 0) {
+                    SetUnitTimeScalePercent(this.uFossurious, 100);
+                    SetUnitAnimation(this.uFossurious, "stand");
                     UnitRemoveAbility(this.uFossurious, this.aBurrowDummy); //remove burrow ability
                     this.destroy();
                 }
@@ -115,21 +121,16 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
             this.tickTimer.start(this.rEffectTick);
         }
 
-        private method TunnelInstant() {
-            this.FinishCast();
-        }
-
         private method Tunnel() {
             if (getUnitsInRange(this.lChannel, this.tunnelRange) == 0) {
                 BlzUnitDisableAbility(this.uFossurious, this.aUnique, true, true); //disable ability that has no casting time
                 UnitAddAbility(this.uFossurious, this.aUniqueDummy); //give foss a dummy ability that has casting time
                 SetUnitAbilityLevel(this.uFossurious, this.aUniqueDummy, this.aLevel); //give foss a dummy ability that has casting time
                 IssueImmediateOrderById(this.uFossurious, 852150);
-                //IssuePointOrderById(this.uFossurious, 852150, GetLocationX(this.lTarget), GetLocationY(this.lTarget));
                 this.bDummyAbility = true;
                 this.TunnelChannel();
             } else {
-                this.TunnelInstant();
+                this.FinishCast();
             }
         }
 
@@ -149,7 +150,6 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
 
         private method setup(){
             //setup variables here
-            this.hTunneling = InitHashtable();
             this.uFossurious = getCaster();
             this.lChannel = GetUnitLoc(this.uFossurious);
             this.lTarget = Location(GetSpellTargetX(), GetSpellTargetY());
@@ -163,14 +163,11 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
 		  
         private method onDestroy(){
             //destroy, cleanup
-
             RemoveLocation(this.lEffect);
             RemoveLocation(this.lChannel);
             RemoveLocation(this.lTarget);
             this.finishTimer.deleteLater();
 			this.finishTimer = 0;
-            FlushParentHashtable(this.hTunneling);
-            this.hTunneling = null;
             this.uFossurious = null;
             this.lChannel = null;
             this.lEffect = null;
