@@ -64,17 +64,16 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
                 if (this.rEffectNumber == 4) {
                     //cast burrow
                     UnitAddAbility(this.uFossurious, this.aBurrowDummy); //give foss a dummy ability to burrow animate
-                    BlzUnitHideAbility(this.uFossurious, this.aBurrowDummy, true); //hide dummy ability
                     IssueImmediateOrderById(this.uFossurious, 852533);
 					SetUnitTimeScalePercent(this.uFossurious, 84);
                 }
                 if (this.rEffectNumber == 3) {
-                    SetUnitTimeScalePercent(this.uFossurious, 0)
-                    //ShowUnit(this.uFossurious, false); //hide unit
+                    SetUnitTimeScalePercent(this.uFossurious, 0);
+                    ShowUnit(this.uFossurious, false); //hide unit
                 }
                 if (this.rEffectNumber == 2) {
                     SetUnitPosition(this.uFossurious, GetLocationX(this.lTarget), GetLocationY(this.lTarget));
-                    //ShowUnit(this.uFossurious, true); //unhide unit
+                    ShowUnit(this.uFossurious, true); //unhide unit
                     SelectUnitForPlayerSingle(this.uFossurious, GetOwningPlayer(this.uFossurious));
                     IssueImmediateOrderById(this.uFossurious, 852533); //unburrow cast
                     SetUnitTimeScalePercent(this.uFossurious, 15);
