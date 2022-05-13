@@ -6,17 +6,13 @@ library BaseSystem requires GT, BUM, ABMA, IsUnitTower, IsUnitWall {
         private static constant integer baseTowers = 10; //how many towers until it is considered a base
         private static constant integer baseWalls = 5; //how many walls until it is considered a base
 
-        public rect Base[100][10]; //array containing rectangle regions for each base
+        public rect BaseRects[100][10]; //array containing rectangle regions for each base
+        public region Base[100]; //base region array containing each rect from BaseRects
         public boolean baseDetected[100]; //boolean if a base has existed at this location before
-        public boolean destroyedBase[100]; //boolean if the detected base has already been destroyed once
+        public boolean baseDestroyed[100]; //boolean if the detected base has already been destroyed once
 
-        public method IsUnitInBase(unit u, integer baseID) -> boolean {
-            for (0<=rects<=10) { //Only ever a max of 10rects inside a base array
-                if (BaseSystem.Base[baseID][rects] == null) break; //break if the next instance of a rect is empty
-                if (IsUnitInRegion(BaseSystem.Base[baseID][rects])) {
-                    return true;
-                }
-            }
+        public method IsUnitInBase(unit uBase, integer baseID) -> boolean {
+            if (IsUnitInRegion(thistype.Base[baseID], uBase)) return true;
             return false; //unit not found in base
         }
 
@@ -26,7 +22,7 @@ library BaseSystem requires GT, BUM, ABMA, IsUnitTower, IsUnitWall {
             integer countTower = 0;
             integer countWall = 0;
 
-            gBase = BaseSystem.GroupUnitsInBase(baseID);
+            gBase = thistype.GroupUnitsInBase(baseID);
 
             if(CountUnitsInGroup(gBase) > 0) { //there are units in the base region, maybe it is a base?
                 uBase = FirstOfGroup(gBase);
@@ -38,8 +34,8 @@ library BaseSystem requires GT, BUM, ABMA, IsUnitTower, IsUnitWall {
                 }
             }
 
-            if ((countWall >= BaseSystem.baseWalls) && (countTower >= BaseSystem.baseTowers)) {
-                BaseSystem.baseDetected[baseID] = true;
+            if ((countWall >= thistype.baseWalls) && (countTower >= thistype.baseTowers)) {
+                thistype.baseDetected[baseID] = true;
                 GroupClear(gBase);
                 DestroyGroup(gBase);
                 gBase = null;
@@ -54,11 +50,11 @@ library BaseSystem requires GT, BUM, ABMA, IsUnitTower, IsUnitWall {
             return false;
         }
 
-        public method GroupUnitsInBase(integer baseID) -> group {
+        public method GroupUnitsInBase(integer baseID) -> group { //GroupEnumUnitsInRegion
             group gBase = CreateGroup();
             for (0<=rects<=10) { //Only ever a max of 10rects inside a base array
-                if (BaseSystem.Base[baseID][rects] == null) break; //break if the next instance of a rect is empty
-                GroupEnumUnitsInRect(gBase, BaseSystem.Base[baseID][rects], null);
+                if (thistype.BaseRects[baseID][rects] == null) break; //break if the next instance of a rect is empty
+                GroupEnumUnitsInRect(gBase, thistype.BaseRects[baseID][rects], null);
             }
             return gBase;
         }
@@ -96,12 +92,12 @@ library BaseSystem requires GT, BUM, ABMA, IsUnitTower, IsUnitWall {
         }
 	}
 
-    private function SetupBases() {
+    private function SetupBaseRects() {
         //Defensible bases
             //Aztec
-            BaseSystem.Base[0][0] = gg_rct_Base00;
+            BaseSystem.BaseRects[0][0] = gg_rct_Base00;
             //Bay
-            BaseSystem.Base[0][0] = gg_rct_Base00;
+            BaseSystem.BaseRects[0][0] = gg_rct_Base00;
             //Broken Fountain
             //Claw
             //Heaven
@@ -127,8 +123,23 @@ library BaseSystem requires GT, BUM, ABMA, IsUnitTower, IsUnitWall {
         
     }
     
+    private function SetupBaseRegions() {
+        integer baseID, rects = 0;
+        for(0<=baseID<=BaseSystem.totalBase) {
+            Base[baseID] = CreateRegion();
+            BaseSystem.baseDetected[baseID]] = false;
+            BaseSystem.baseDestroyed[baseID]] = false;
+
+            for (0<=rects<=10) { //Only ever a max of 10rects inside a base array
+                if (BaseSystem.BaseRects[baseID][rects] == null) break; //break if the next instance of a rect is empty
+                RegionAddRect(BaseSystem.Base[baseID], BaseSystem.BaseRects[baseID][rects]);
+            }
+        }
+    }
+    
     private function onInit(){
-        SetupBases();
+        SetupBaseRects();
+        SetupBaseRegions();
     }
 }
 
