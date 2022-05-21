@@ -9,6 +9,7 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
         public static constant integer uCryptTunnel = 'e01E';
         private static constant real rEffectDistance = 74; //distance factor between each effect
         private static constant real tunnelRange = 250.0; //distance to tunnel for instant cast
+        private static constant real tunnelLife = 600.0 //length in seconds for tunnel - tunnel has negative regen so it will die itself as well
 
         public static integer iCryptTunnelCount = 0;
 
@@ -64,7 +65,7 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
                 if (this.rEffectNumber == 4) {
                     //cast burrow
                     UnitAddAbility(this.uFossurious, this.aBurrowDummy); //give foss a dummy ability to burrow animate
-                    IssueImmediateOrderById(this.uFossurious, 852533);
+                    IssueImmediateOrderById(this.uFossurious, 852533); //burrow cast
 					SetUnitTimeScalePercent(this.uFossurious, 84);
                 }
                 if (this.rEffectNumber == 3) {
@@ -111,7 +112,8 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
 				this.rEffectNumber = this.rEffectNumber - 1;
 
 				if (this.rEffectNumber <= 0) {
-                    if (!this.bTunnelCreated) CreateUnit(GetOwningPlayer(this.uFossurious), FossuriousUnique.uCryptTunnel, GetLocationX(this.lChannel), GetLocationY(this.lChannel), GetUnitFacing(this.uFossurious));
+                    //create tunnel for 10minutes
+                    if (!this.bTunnelCreated) UnitApplyTimedLife(CreateUnit(GetOwningPlayer(this.uFossurious), FossuriousUnique.uCryptTunnel, GetLocationX(this.lChannel), GetLocationY(this.lChannel), GetUnitFacing(this.uFossurious)), 'BTLF', this.tunnelLife);
 					this.bTunnelCreated = true;
                     FinishCast();
 				}
@@ -138,7 +140,7 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
             FossuriousUnique.iCryptTunnelCount = 0;
 
             GroupEnumUnitsInRange(g, GetLocationX(loc), GetLocationY(loc), range, function() -> boolean {
-                return GetUnitTypeId(GetFilterUnit()) == FossuriousUnique.uCryptTunnel && UnitAlive(GetFilterUnit());
+                return (GetUnitTypeId(GetFilterUnit()) == FossuriousUnique.uCryptTunnel || GetUnitTypeId(GetFilterUnit()) == GetUnitTypeId(getGoldMine())) && UnitAlive(GetFilterUnit());
             });
             ForGroup(g, function() { FossuriousUnique.iCryptTunnelCount = FossuriousUnique.iCryptTunnelCount + 1; });
 
