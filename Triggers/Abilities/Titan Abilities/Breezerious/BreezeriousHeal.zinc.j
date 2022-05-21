@@ -1,5 +1,5 @@
 //! zinc
-library BreezeriousHeal requires GameTimer, xemissile, xedamage, UnitAlive, UnitMaxState, Healing {
+library BreezeriousHeal requires GameTimer, xemissile, xedamage, UnitAlive, UnitMaxState, Healing, IsUnitWard {
     private struct HealMissile extends xehomingmissile {
         private xedamage heal;
         real amount;
@@ -45,17 +45,18 @@ library BreezeriousHeal requires GameTimer, xemissile, xedamage, UnitAlive, Unit
         private boolean lowestHP = true;
         
         private method setup(integer level) {
-            this.orbHP = 200 + (level * 200);
+            this.orbHP = 100 + (level * 50);
             this.orbHPR = 4 * level * this.timerSpeed;
             this.numOrbs = level;
             if(GetUnitAbilityLevel(this.caster, this.uniqueAbilityId) > 0) {
-                this.orbHP = 400 + (level * 200) + I2R(GetUnitAbilityLevel(this.caster, this.uniqueAbilityId) * 200);
+                this.orbHP = 100 + (level * 50) + I2R(GetUnitAbilityLevel(this.caster, this.uniqueAbilityId) * 75);
             }
         }
         
         private method CheckTarget(unit u) -> boolean {
             return IsUnitAlly(u, GetOwningPlayer(this.caster)) && 
             !IsUnitType(u, UNIT_TYPE_MECHANICAL) &&
+            !IsUnitWard(u) &&
             GetWidgetLife(u) > .405 &&
             GetUnitTypeId(u) != this.dummyId;
         }
