@@ -126,7 +126,7 @@ library BaseSystem requires GT, BUM, ABMA, IsUnitTower, IsUnitWall {
     private function SetupBaseRegions() {
         integer baseID, rects = 0;
         for(0<=baseID<=BaseSystem.totalBase) {
-            Base[baseID] = CreateRegion();
+            BaseSystem.Base[baseID] = CreateRegion();
             BaseSystem.baseDetected[baseID]] = false;
             BaseSystem.baseDestroyed[baseID]] = false;
 
