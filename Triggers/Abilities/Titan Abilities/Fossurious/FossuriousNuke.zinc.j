@@ -22,7 +22,7 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
             }
             if (FossuriousNuke.bStructHit) {
                 this.object.destroy();
-                this.terminate();          
+                this.terminate();                
             }
             if (range > this.object.distance){ //if nuke has travelled further than defined distance, destroy. There was some weird circumstances where the nuke would never never reach the target and would leak the object
                 this.object.destroy();
@@ -33,9 +33,9 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
 
     private struct FossuriousNuke {
         private static constant integer ABILITY_ID = 'A0PW';
-        private static constant string WAVE_EFFECT = "Abilities\\Spells\\Undead\\Impale\\ImpaleMissTarget.mdl";
-        private static constant string TARGET_EFFECT = "Abilities\\Spells\\Undead\\Impale\\ImpaleHitTarget.mdl";
-        private static constant string POSITION_EFFECT = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl";
+        private static constant string WAVE_EFFECT = "Model_Ability_Titan_Fossurious_NukeMissile.mdx";
+        private static constant string TARGET_EFFECT = "Model_Ability_Titan_Fossurious_NukeMissile.mdx";
+        private static constant string POSITION_EFFECT = "Model_Ability_Titan_Fossurious_NukeMissile.mdx";
         public static boolean bStructHit = false;
 
 
@@ -94,9 +94,13 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
             real y = GetUnitY(u);
             unit ue = null;
             group g = CreateGroup();
+			effect ef;
 
             // Create effect
-            DestroyEffectTimed(AddSpecialEffect(thistype.POSITION_EFFECT, x, y), 1.0);
+			ef = AddSpecialEffect(thistype.POSITION_EFFECT, x, y);
+			DestroyEffectTimed(ef, 0.65);
+			BlzSetSpecialEffectScale(ef, 2.45);
+			ef = null;
             this.wave.setTargetPoint(x, y);
 
             GroupEnumUnitsInRange(g, x, y, this.damageArea, null);
