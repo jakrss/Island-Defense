@@ -21,8 +21,16 @@ library BetaTesterPerk requires PerksSystem {
         
         public method forPlayer(PlayerData p) -> boolean {
             string name = StringCase(p.name(), false);
-             if(name == "" ||
-		        name == "") return true;
+             if(name == "roisbe#1455" ||
+		        name == "ferine#1175" ||
+		        name == "kion#11991" ||
+		        name == "bloodyleaf#1850" ||
+		        name == "lunarghost#1379" ||
+		        name == "damon#12848" ||
+		        name == "theagle#2528" ||
+		        name == "lordfarquaad#1253" ||
+		        name == "birdman#11590" ||
+		        name == "voodoo#11111") return true;
             return false;
         }
         
