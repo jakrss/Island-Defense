@@ -9,9 +9,10 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
         public static constant integer uCryptTunnel = 'e01E';
         private static constant real rEffectDistance = 74; //distance factor between each effect
         private static constant real tunnelRange = 250.0; //distance to tunnel for instant cast
-        private static constant real tunnelLife = 600.0 //length in seconds for tunnel - tunnel has negative regen so it will die itself as well
+        private static constant real tunnelLife = 600.0; //length in seconds for tunnel
 
         public static integer iCryptTunnelCount = 0;
+        public static boolean endChannel = false;
 
         private static unit uFossurious = null; //fossurious unit
         private static location lChannel = null; //location of fossurious at time of channel
@@ -26,9 +27,14 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
         private real rEffectTick = 0.0; //how often to tick
         private boolean bTunnelCreated = false;
         private boolean bDummyAbility = false;
+        private boolean Channeling = true;
 		
 		static method abilityId() -> integer {
             return thistype.aUnique;
+        }
+
+        static method abilityIdDummy() -> integer {
+            return thistype.aUniqueDummy;
         }
 		
 		static method targetEffect() -> string {
@@ -56,28 +62,32 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
             this.rEffectNumber = 4;
             this.finishTimer = GameTimer.newPeriodic(function(GameTimer t){
                 thistype this = t.data();
+
                 if (this.bDummyAbility) {
                     UnitRemoveAbility(this.uFossurious, this.aUniqueDummy);
                     BlzUnitDisableAbility(this.uFossurious, this.aUnique, false, false);
                     this.bDummyAbility = false;
                 }
-
-                if (this.rEffectNumber == 4) {
-                    //cast burrow
-                    UnitAddAbility(this.uFossurious, this.aBurrowDummy); //give foss a dummy ability to burrow animate
-                    IssueImmediateOrderById(this.uFossurious, 852533); //burrow cast
-					SetUnitTimeScalePercent(this.uFossurious, 84);
-                }
-                if (this.rEffectNumber == 3) {
-                    SetUnitTimeScalePercent(this.uFossurious, 0);
-                    ShowUnit(this.uFossurious, false); //hide unit
-                }
-                if (this.rEffectNumber == 2) {
-                    SetUnitPosition(this.uFossurious, GetLocationX(this.lTarget), GetLocationY(this.lTarget));
-                    ShowUnit(this.uFossurious, true); //unhide unit
-                    SelectUnitForPlayerSingle(this.uFossurious, GetOwningPlayer(this.uFossurious));
-                    IssueImmediateOrderById(this.uFossurious, 852533); //unburrow cast
-                    SetUnitTimeScalePercent(this.uFossurious, 15);
+                if (this.Channeling) {
+                    if (this.rEffectNumber == 4) {
+                        //cast burrow
+                        UnitAddAbility(this.uFossurious, this.aBurrowDummy); //give foss a dummy ability to burrow animate
+                        IssueImmediateOrderById(this.uFossurious, 852533); //burrow cast
+                        SetUnitTimeScalePercent(this.uFossurious, 84);
+                    }
+                    if (this.rEffectNumber == 3) {
+                        SetUnitTimeScalePercent(this.uFossurious, 0);
+                        ShowUnit(this.uFossurious, false); //hide unit
+                    }
+                    if (this.rEffectNumber == 2) {
+                        SetUnitPosition(this.uFossurious, GetLocationX(this.lTarget), GetLocationY(this.lTarget));
+                        ShowUnit(this.uFossurious, true); //unhide unit
+                        SelectUnitForPlayerSingle(this.uFossurious, GetOwningPlayer(this.uFossurious));
+                        IssueImmediateOrderById(this.uFossurious, 852533); //unburrow cast
+                        SetUnitTimeScalePercent(this.uFossurious, 15);
+                    }
+                } else {
+                    this.rEffectNumber = 0;
                 }
 
                 CreateTunnelEffect(this.lTarget);
@@ -106,6 +116,8 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
             this.lEffect = this.lChannel; //on first cast, set effect location to location of foss
             this.tickTimer = GameTimer.newPeriodic(function(GameTimer t){
                 thistype this = t.data();
+                if (FossuriousUnique.endChannel) this.rEffectNumber = 0;
+
                 this.lEffect = Location(offsetXTowardsPoint(GetLocationX(this.lEffect), GetLocationY(this.lEffect), GetLocationX(this.lTarget), GetLocationY(this.lTarget), this.rEffectDistance), 
                                         offsetYTowardsPoint(GetLocationX(this.lEffect), GetLocationY(this.lEffect), GetLocationX(this.lTarget), GetLocationY(this.lTarget), this.rEffectDistance));
                 CreateTunnelEffect(this.lEffect); //create the tunnel effect at each point
@@ -113,8 +125,10 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
 
 				if (this.rEffectNumber <= 0) {
                     //create tunnel for 10minutes
-                    if (!this.bTunnelCreated) UnitApplyTimedLife(CreateUnit(GetOwningPlayer(this.uFossurious), FossuriousUnique.uCryptTunnel, GetLocationX(this.lChannel), GetLocationY(this.lChannel), GetUnitFacing(this.uFossurious)), 'BTLF', this.tunnelLife);
+                    if ((!this.bTunnelCreated) && (!FossuriousUnique.endChannel)) UnitApplyTimedLife(CreateUnit(GetOwningPlayer(this.uFossurious), FossuriousUnique.uCryptTunnel, GetLocationX(this.lChannel), GetLocationY(this.lChannel), GetUnitFacing(this.uFossurious)), 'BTLF', this.tunnelLife);
 					this.bTunnelCreated = true;
+
+                    if (FossuriousUnique.endChannel) this.Channeling = false;
                     FinishCast();
 				}
             });
@@ -174,6 +188,8 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
             this.lEffect = null;
             this.lTarget = null;
             this.bTunnelCreated = false;
+            this.Channeling = true;
+            FossuriousUnique.endChannel = false;
         }
         
         private static method onCast(){
@@ -189,6 +205,15 @@ library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
                 return false;
             }));
             XE_PreloadAbility(thistype.abilityId());
+			t = null;
+
+            t = CreateTrigger();
+            //GT_RegisterStopsCastingEvent
+            GT_RegisterStopsCastingEvent(t, thistype.abilityIdDummy()); //channeling event
+            TriggerAddCondition(t, Condition(function() -> boolean {
+                FossuriousUnique.endChannel = true;
+                return false;
+            }));
 			t = null;
         }
 	}
