@@ -1,6 +1,5 @@
 //! zinc
 
-//TODO: ANIMATIONS
 library FossuriousUnique requires GT, GameTimer, BUM, ABMA, MathLibs {
     private struct FossuriousUnique {
         private static constant integer aUnique = 'A0Q0';
