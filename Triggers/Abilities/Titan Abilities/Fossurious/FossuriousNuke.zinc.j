@@ -20,6 +20,10 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
                 this.object.destroy();
                 this.terminate();
             }
+            if (FossuriousNuke.bStructHit) {
+                this.object.destroy();
+                this.terminate();          
+            }
             if (range > this.object.distance){ //if nuke has travelled further than defined distance, destroy. There was some weird circumstances where the nuke would never never reach the target and would leak the object
                 this.object.destroy();
                 this.terminate();
@@ -32,6 +36,7 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
         private static constant string WAVE_EFFECT = "Abilities\\Spells\\Undead\\Impale\\ImpaleMissTarget.mdl";
         private static constant string TARGET_EFFECT = "Abilities\\Spells\\Undead\\Impale\\ImpaleHitTarget.mdl";
         private static constant string POSITION_EFFECT = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl";
+        public static boolean bStructHit = false;
 
 
         private method setup(integer level){
@@ -122,6 +127,7 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
             if (this.checkStructure(u)) {
                 this.SpasmicShockStructure(u);
                 this.hitStructure = true;
+                FossuriousNuke.bStructHit = true;
                 return;
             } else if (!this.checkTarget(u)) {
                 return;
@@ -173,6 +179,7 @@ library FossuriousNuke requires GenericTitanTargets, UnitStatus {
             integer level = GetUnitAbilityLevel(caster, thistype.ABILITY_ID);
             real x = GetSpellTargetX();
             real y = GetSpellTargetY();
+            FossuriousNuke.bStructHit = false;
             FossuriousNuke.begin(caster, x, y, level);
         }
         
